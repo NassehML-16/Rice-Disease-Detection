@@ -1,0 +1,42 @@
+# Ignore virtual environments
+venv/
+env/
+env311/
+.venv/
+
+# Ignore OS/system files
+.DS_Store
+Thumbs.db
+
+# Ignore Python cache
+__pycache__/
+*.pyc
+*.pyo
+*.pyd
+
+# Ignore model training artifacts
+*.h5
+*.hdf5
+*.ckpt
+*.pb
+*.tflite
+
+# Ignore datasets
+dataset/
+collected_data/
+
+# Jupyter Notebook checkpoints
+.ipynb_checkpoints/
+
+# Ignore logs
+logs/
+*.log
+
+# Streamlit and cache files
+.streamlit/
+.streamlit/cache/
+.streamlit/state.json
+
+# Ignore environment files created by IDEs
+.vscode/
+.idea/
