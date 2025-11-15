@@ -5,7 +5,7 @@ Lightweight Streamlit app for rice leaf disease detection using a Keras/TensorFl
 This repository contains:
 
 - `app.py` — Streamlit application that loads a Keras `.h5` model, accepts an image upload or camera input, runs inference, shows predictions, and generates a downloadable PDF report.
-- `rice_disease_cnn_model.h5` / `rice_disease_cnn_model_v2.h5` — example model files.
+- `rice_disease_cnn_model.h5` 
 - `dataset/` — training / test folders (not used by the app at inference time).
 - `requirements.txt` — Python dependencies used for the project.
 
