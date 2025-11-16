@@ -170,7 +170,8 @@ def create_report_pdf(image: Image.Image, label: str, confidence: float, notes: 
     """Create a simple one-page PDF report (A4-like) using PIL and return bytes.
 
     Title is rendered bold and headings/subheadings are bold. Font sizes are increased
-    for readability and the uploaded image is embedded in the report.
+    for readability. The uploaded image is embedded in the report below the last
+    sentence with one line space separating the text and the image.
     """
     # Create a white canvas (A4 approximation: 2480x3508 px at 300dpi; we use smaller for speed)
     W, H = 1240, 1754  # roughly A4 at 150 dpi
@@ -243,16 +244,10 @@ def create_report_pdf(image: Image.Image, label: str, confidence: float, notes: 
         draw.text((margin+10, y), line, font=font_body, fill='black')
         y += BODY_SIZE - 2
 
-    # Draw the (resized) image on the right side (larger to be clearer)
-    img_w = 420
-    img_h = 420
-    thumb = image.copy()
-    thumb.thumbnail((img_w, img_h))
-    canvas.paste(thumb, (W - img_w - margin, margin + TITLE_SIZE))
-
     # Notes or user comments (bold heading)
+    final_text_bottom = y  # track where text ends if there are no notes
     if notes:
-        y_notes = max(y + 10, margin + TITLE_SIZE + img_h + 20 if img_h else y + 10)
+        y_notes = max(y + 10, margin + TITLE_SIZE + 20)
         if use_emulated_bold:
             draw.text((margin, y_notes), 'Notes:', font=font_heading, fill='black')
             draw.text((margin+1, y_notes+1), 'Notes:', font=font_heading, fill='black')
@@ -262,6 +257,35 @@ def create_report_pdf(image: Image.Image, label: str, confidence: float, notes: 
         for line in notes.split('\n'):
             draw.text((margin+10, y_notes), line, font=font_body, fill='black')
             y_notes += BODY_SIZE - 2
+        final_text_bottom = y_notes
+    else:
+        final_text_bottom = y
+
+    # Add one line space after the last sentence before placing the image
+    one_line_space = BODY_SIZE + 6
+    image_top = final_text_bottom + one_line_space
+
+    # Compute available area for the image and resize to fit width while preserving aspect
+    available_width = W - 2 * margin
+    available_height = H - image_top - margin
+    if available_height <= 0:
+        # Not enough space beneath text; reduce top or shrink image to minimal height
+        available_height = H - (margin + TITLE_SIZE) - margin
+        image_top = margin + TITLE_SIZE + 12
+
+    # Decide max image size: prefer square-ish but bounded by available area
+    max_img_w = available_width
+    max_img_h = available_height
+    thumb = image.copy()
+    thumb.thumbnail((max_img_w, max_img_h))
+    img_w, img_h = thumb.size
+
+    # Center the image horizontally below the text
+    img_x = margin + (available_width - img_w) // 2
+    img_y = int(image_top)
+
+    # Paste the image onto the canvas
+    canvas.paste(thumb, (img_x, img_y))
 
     # Save to bytes buffer as PDF
     buf = io.BytesIO()
@@ -380,4 +404,3 @@ elif page == 'Information':
         '- Monitor fields regularly, remove infected plants early, and manage weeds and volunteer hosts.\n'
         '- Consult local extension services for approved agrochemicals and region-specific recommendations.'
     )
-
